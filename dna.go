@@ -37,6 +37,9 @@ Valid fields for opts are as follows:
 		- required: false
 		- default: "50"
 		- validation: must be empty string or parsable as a base 10 integer
+	* "ref"
+		- purpose: the git SHA to check out in the cloned repo
+		- required: true
 	* "repo"
 		- purpose: GitHub repo
 		- required: true
