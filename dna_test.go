@@ -3,17 +3,11 @@ package kamino_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"testing"
 
 	. "github.com/modcloth/kamino"
 )
 
-func TestBuilder(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Genome Spec")
-}
-
-var _ = Describe("Creating a new genome", func() {
+var _ = Describe("NewGenome()", func() {
 
 	var opts map[string]string
 
@@ -24,6 +18,7 @@ var _ = Describe("Creating a new genome", func() {
 			"account": "modcloth",
 			"repo":    "kamino",
 			"cache":   "",
+			"ref":     "123",
 		}
 	})
 
@@ -74,6 +69,16 @@ var _ = Describe("Creating a new genome", func() {
 	Context("with an invalid cache option", func() {
 		It("returns an error", func() {
 			opts["cache"] = "foo"
+			ret, err := NewGenome(opts)
+
+			Expect(ret).To(BeNil())
+			Expect(err).ToNot(BeNil())
+		})
+	})
+
+	Context("with no ref specified", func() {
+		It("returns an error", func() {
+			opts["ref"] = ""
 			ret, err := NewGenome(opts)
 
 			Expect(ret).To(BeNil())

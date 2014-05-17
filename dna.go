@@ -10,6 +10,7 @@ type genome struct {
 	APIToken string
 	Account  string
 	Depth    string
+	Ref      string
 	Repo     string
 	UseCache string
 }
@@ -66,6 +67,12 @@ func NewGenome(opts map[string]string) (*genome, error) {
 		g.Account = account
 	} else {
 		return nil, errors.New("account must be provided")
+	}
+
+	if ref, ok := opts["ref"]; ok && ref != "" {
+		g.Ref = ref
+	} else {
+		return nil, errors.New("ref must be provided")
 	}
 
 	if repo, ok := opts["repo"]; ok && repo != "" {
