@@ -28,9 +28,9 @@ Valid fields for opts are as follows:
 		- default: "no"
 		- valid options:
 			* "no" - do not use cache, create a uniquely named directory
-		* "if_available" - use cache if already created, otherwise create a uniquely named directory
-		* "create" - use cache if already created, create cache if not present
-		* "force" - use cache if already created, fail if cache not present
+			* "if_available" - use cache if already created, otherwise create a uniquely named directory
+			* "create" - use cache if already created, create cache if not present
+			* "force" - use cache if already created, fail if cache not present
 	* "depth"
 		- purpose: git clone `--depth` option
 		- required: false
