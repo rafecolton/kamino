@@ -9,7 +9,7 @@ import (
 )
 
 type clone struct {
-	*genome
+	*Genome
 	workdir string
 }
 

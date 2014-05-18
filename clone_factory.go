@@ -1,6 +1,11 @@
 package kamino
 
-import "os"
+import (
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+)
 
 /*
 A CloneFactory generates your clones for you.  Create a clone factory with NewCloneFactory().
@@ -27,22 +32,55 @@ func NewCloneFactory(workdir string) (*CloneFactory, error) {
 /*
 Clone clones the repo as specified by the genome parameters.
 */
-func (factory *CloneFactory) Clone(g *genome) (path string, err error) {
+func (factory *CloneFactory) Clone(g *Genome) (path string, err error) {
+	if err = ValidateGenome(g); err != nil {
+		return "", err
+	}
+
 	creator := &clone{
-		genome:  g,
+		Genome:  g,
 		workdir: factory.workdir,
 	}
 
 	switch g.UseCache {
-	case "no":
+	case No:
 		return creator.cloneNoCache()
-	case "create":
+	case Create:
 		return creator.cloneCreateCache()
-	case "force":
+	case Force:
 		return creator.cloneForceCache()
-	case "if_available":
+	case IfAvailable:
 		return creator.cloneCacheIfAvailable()
 	default:
 		return creator.cloneNoCache()
 	}
+}
+
+/*
+ValidateGenome validates a genome and returns a non-nil error if the genome is invalid.
+*/
+func ValidateGenome(g *Genome) error {
+	if g.Depth != "" {
+		if _, err := strconv.Atoi(g.Depth); err != nil {
+			return fmt.Errorf("%q is not a valid clone depth", g.Depth)
+		}
+	}
+
+	if !g.UseCache.IsValid() {
+		return fmt.Errorf("%q is not a valid cache option", g.UseCache)
+	}
+
+	if g.Account == "" {
+		return errors.New("account must be provided")
+	}
+
+	if g.Ref == "" {
+		return errors.New("ref must be provided")
+	}
+
+	if g.Repo == "" {
+		return errors.New("repo must be provided")
+	}
+
+	return nil
 }

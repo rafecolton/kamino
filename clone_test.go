@@ -17,8 +17,8 @@ import (
 var (
 	requestedSHA    = "df66a4216affe8fe29af354f78e9016781e7bb8e"
 	nonRequestedSHA = "9830dc808697ba1c7db91df908cb99eb9b3062fe"
-	opts            map[string]string
-	preCloneOpts    map[string]string
+	preCloneGenome  *Genome
+	cloneGenome     *Genome
 	cacheDirSuffix  = "modcloth-labs/kamino-test"
 	subject         *CloneFactory
 	tmpdir          string
@@ -29,17 +29,16 @@ var (
 
 var _ = Describe("no cache", func() {
 	BeforeEach(func() {
-		opts = map[string]string{
-			"depth":   "50",
-			"token":   "",
-			"account": "modcloth-labs",
-			"repo":    "kamino-test",
-			"cache":   "no",
-			"ref":     requestedSHA,
+		genome := &Genome{
+			Depth:    "50",
+			Account:  "modcloth-labs",
+			Repo:     "kamino-test",
+			UseCache: "no",
+			Ref:      requestedSHA,
 		}
+
 		tmpdir, _ = ioutil.TempDir("", "kamino-test")
 		subject, _ = NewCloneFactory(tmpdir)
-		genome, _ := NewGenome(opts)
 		cachePath = fmt.Sprintf("%s/%s", tmpdir, cacheDirSuffix)
 
 		path, _ = subject.Clone(genome)
@@ -62,20 +61,19 @@ var _ = Describe("no cache", func() {
 
 var _ = Describe("create cache", func() {
 	BeforeEach(func() {
-		opts = map[string]string{
-			"depth":   "50",
-			"token":   "",
-			"account": "modcloth-labs",
-			"repo":    "kamino-test",
-			"cache":   "create",
-			"ref":     requestedSHA,
+		cloneGenome = &Genome{
+			Depth:    "50",
+			Account:  "modcloth-labs",
+			Repo:     "kamino-test",
+			UseCache: "create",
+			Ref:      requestedSHA,
 		}
+
 		tmpdir, _ = ioutil.TempDir("", "kamino-test")
 		subject, _ = NewCloneFactory(tmpdir)
-		genome, _ := NewGenome(opts)
 		cachePath = fmt.Sprintf("%s/%s", tmpdir, cacheDirSuffix)
 
-		path, _ = subject.Clone(genome)
+		path, _ = subject.Clone(cloneGenome)
 	})
 
 	AfterEach(func() {
@@ -95,21 +93,19 @@ var _ = Describe("create cache", func() {
 
 var _ = Describe("force cache", func() {
 	BeforeEach(func() {
-		preCloneOpts = map[string]string{
-			"depth":   "50",
-			"token":   "",
-			"account": "modcloth-labs",
-			"repo":    "kamino-test",
-			"cache":   "create",
-			"ref":     nonRequestedSHA,
+		preCloneGenome = &Genome{
+			Depth:    "50",
+			Account:  "modcloth-labs",
+			Repo:     "kamino-test",
+			UseCache: "create",
+			Ref:      nonRequestedSHA,
 		}
-		opts = map[string]string{
-			"depth":   "50",
-			"token":   "",
-			"account": "modcloth-labs",
-			"repo":    "kamino-test",
-			"cache":   "force",
-			"ref":     requestedSHA,
+		cloneGenome = &Genome{
+			Depth:    "50",
+			Account:  "modcloth-labs",
+			Repo:     "kamino-test",
+			UseCache: "force",
+			Ref:      requestedSHA,
 		}
 		tmpdir, _ = ioutil.TempDir("", "kamino-test")
 		subject, _ = NewCloneFactory(tmpdir)
@@ -123,16 +119,14 @@ var _ = Describe("force cache", func() {
 		It("successfully clones the to the correct ref", func() {
 
 			//////////////////////////////////////////
-			/* make sure the directory exists first */
+			// make sure the directory exists first //
 			//////////////////////////////////////////
-			preGenome, _ := NewGenome(preCloneOpts)
-			subject.Clone(preGenome)
+			subject.Clone(preCloneGenome)
 			/////////////////////////////////////////
 
-			genome, _ := NewGenome(opts)
 			cachePath = fmt.Sprintf("%s/%s", tmpdir, cacheDirSuffix)
 
-			subject.Clone(genome)
+			subject.Clone(cloneGenome)
 
 			ref, _ := GetRef(cachePath)
 
@@ -142,8 +136,7 @@ var _ = Describe("force cache", func() {
 
 	Context("cache directory does not exist prior to cloning", func() {
 		It("returns an error", func() {
-			genome, _ := NewGenome(opts)
-			path, err = subject.Clone(genome)
+			path, err = subject.Clone(cloneGenome)
 
 			Expect(err).ToNot(BeNil())
 		})
@@ -152,22 +145,21 @@ var _ = Describe("force cache", func() {
 
 var _ = Describe("use cache if available", func() {
 	BeforeEach(func() {
-		preCloneOpts = map[string]string{
-			"depth":   "50",
-			"token":   "",
-			"account": "modcloth-labs",
-			"repo":    "kamino-test",
-			"cache":   "create",
-			"ref":     nonRequestedSHA,
+		preCloneGenome = &Genome{
+			Depth:    "50",
+			Account:  "modcloth-labs",
+			Repo:     "kamino-test",
+			UseCache: "create",
+			Ref:      nonRequestedSHA,
 		}
-		opts = map[string]string{
-			"depth":   "50",
-			"token":   "",
-			"account": "modcloth-labs",
-			"repo":    "kamino-test",
-			"cache":   "if_available",
-			"ref":     requestedSHA,
+		cloneGenome = &Genome{
+			Depth:    "50",
+			Account:  "modcloth-labs",
+			Repo:     "kamino-test",
+			UseCache: "if_available",
+			Ref:      requestedSHA,
 		}
+
 		tmpdir, _ = ioutil.TempDir("", "kamino-test")
 		subject, _ = NewCloneFactory(tmpdir)
 		cachePath = fmt.Sprintf("%s/%s", tmpdir, cacheDirSuffix)
@@ -181,16 +173,14 @@ var _ = Describe("use cache if available", func() {
 		It("successfully clones the to the correct ref", func() {
 
 			//////////////////////////////////////////
-			/* make sure the directory exists first */
+			// make sure the directory exists first //
 			//////////////////////////////////////////
-			preGenome, _ := NewGenome(preCloneOpts)
-			subject.Clone(preGenome)
+			subject.Clone(preCloneGenome)
 			/////////////////////////////////////////
 
-			genome, _ := NewGenome(opts)
 			cachePath = fmt.Sprintf("%s/%s", tmpdir, cacheDirSuffix)
 
-			path, _ := subject.Clone(genome)
+			path, _ := subject.Clone(cloneGenome)
 			ref, _ := GetRef(cachePath)
 
 			Expect(ref).To(Equal(requestedSHA))
@@ -200,8 +190,7 @@ var _ = Describe("use cache if available", func() {
 
 	Context("cache directory does not exist prior to cloning", func() {
 		It("does not create a cache directory", func() {
-			genome, _ := NewGenome(opts)
-			path, _ = subject.Clone(genome)
+			path, _ = subject.Clone(cloneGenome)
 			Expect(path).ToNot(Equal(cachePath))
 		})
 	})

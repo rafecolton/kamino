@@ -1,119 +1,63 @@
 package kamino
 
-import (
-	"errors"
-	"fmt"
-	"strconv"
+/*
+A CacheOption is one of the valid cache option constants.
+*/
+type CacheOption string
+
+const (
+	// Create -  use cache if already created, create cache if not present.
+	Create CacheOption = "create"
+
+	// Force - use cache if already created, fail if cache not present.
+	Force CacheOption = "force"
+
+	// IfAvailable - use cache if already created, otherwise create a uniquely named directory.
+	IfAvailable CacheOption = "if_available"
+
+	// No - do not use cache, create a uniquely named directory.
+	No CacheOption = "no"
 )
 
-type genome struct {
-	APIToken string
-	Account  string
-	Depth    string
-	Ref      string
-	Repo     string
-	UseCache string
-}
-
 /*
-NewGenome creates a new genome type, which is the options struct for a CloneFactory.
+A Genome is the genetic options for a clone.  Here are the requirements for a valid genome:
 
-Valid fields for opts are as follows:
-
-	* "account"
+	* Account
 		- purpose: GitHub account
 		- required: true
-	* "cache"
+	* Cache
 		- purpose: whether or not to use the cached / previously cloned version of the repo
 		- required: false
-		- default: "no"
-		- valid options:
-			* "no" - do not use cache, create a uniquely named directory
-			* "if_available" - use cache if already created, otherwise create a uniquely named directory
-			* "create" - use cache if already created, create cache if not present
-			* "force" - use cache if already created, fail if cache not present
-	* "depth"
+		- default: No
+	* Depth
 		- purpose: git clone `--depth` option
 		- required: false
 		- default: "" (the whole repo will be cloned)
 		- validation: must be empty string or parsable as a base 10 integer
-	* "ref"
+	* Ref
 		- purpose: the git SHA to check out in the cloned repo
 		- required: true
-	* "repo"
+	* Repo
 		- purpose: GitHub repo
 		- required: true
-	* "token"
+	* APIToken
 		- purpose: GitHub API token for private repos
 		- required: false (functionally required if your repo is private)
 		- default: (not sent with request if empty)
 
 */
-func NewGenome(opts map[string]string) (*genome, error) {
-	g := &genome{}
-
-	if depth, ok := opts["depth"]; ok && depth != "" {
-		if depth != "" {
-			if _, err := strconv.Atoi(depth); err == nil {
-				g.Depth = depth
-			} else {
-				return nil, fmt.Errorf("%q is not a valid clone depth", depth)
-			}
-		}
-
-		g.Depth = depth
-	}
-
-	if token, ok := opts["token"]; ok {
-		g.APIToken = token
-	}
-
-	if account, ok := opts["account"]; ok && account != "" {
-		g.Account = account
-	} else {
-		return nil, errors.New("account must be provided")
-	}
-
-	if ref, ok := opts["ref"]; ok && ref != "" {
-		g.Ref = ref
-	} else {
-		return nil, errors.New("ref must be provided")
-	}
-
-	if repo, ok := opts["repo"]; ok && repo != "" {
-		g.Repo = repo
-	} else {
-		return nil, errors.New("repo must be provided")
-	}
-
-	if cache, ok := opts["cache"]; ok && cache != "" {
-		if validCacheOption(cache) {
-			g.UseCache = cache
-		} else {
-			return nil, fmt.Errorf("%q is not a valid cache option", cache)
-		}
-	} else {
-		g.UseCache = "no"
-	}
-
-	return g, nil
+type Genome struct {
+	APIToken string
+	Account  string
+	Depth    string
+	Ref      string
+	Repo     string
+	UseCache CacheOption
 }
 
-func validCacheOptions() []string {
-	return []string{
-		"create",
-		"force",
-		"if_available",
-		"no",
-	}
-}
-
-func validCacheOption(opt string) bool {
-	for _, v := range validCacheOptions() {
-		if v == opt {
-			return true
-		}
-	}
-
-	return false
+/*
+IsValid indicates whether or not the cache option is valid.
+*/
+func (opt CacheOption) IsValid() bool {
+	return opt == Create || opt == Force || opt == IfAvailable || opt == No
 }
