@@ -8,16 +8,16 @@ import (
 	"github.com/modcloth/go-fileutils"
 )
 
-type cloneCreator struct {
-	g       *genome
+type clone struct {
+	*genome
 	workdir string
 }
 
-func (creator *cloneCreator) cachePath() string {
-	return fmt.Sprintf("%s/%s/%s", creator.workdir, creator.g.Account, creator.g.Repo)
+func (creator *clone) cachePath() string {
+	return fmt.Sprintf("%s/%s/%s", creator.workdir, creator.Account, creator.Repo)
 }
 
-func (creator *cloneCreator) cloneCacheIfAvailable() (string, error) {
+func (creator *clone) cloneCacheIfAvailable() (string, error) {
 	if err := creator.updateToRef(creator.cachePath()); err != nil {
 		return creator.cloneNoCache()
 	}
@@ -25,7 +25,7 @@ func (creator *cloneCreator) cloneCacheIfAvailable() (string, error) {
 	return creator.cachePath(), nil
 }
 
-func (creator *cloneCreator) cloneForceCache() (string, error) {
+func (creator *clone) cloneForceCache() (string, error) {
 	if err := creator.updateToRef(creator.cachePath()); err != nil {
 		return "", err
 	}
@@ -33,7 +33,7 @@ func (creator *cloneCreator) cloneForceCache() (string, error) {
 	return creator.cachePath(), nil
 }
 
-func (creator *cloneCreator) cloneCreateCache() (string, error) {
+func (creator *clone) cloneCreateCache() (string, error) {
 	if err := creator.cloneRepo(creator.cachePath()); err != nil {
 		return "", err
 	}
@@ -41,13 +41,13 @@ func (creator *cloneCreator) cloneCreateCache() (string, error) {
 	return creator.cachePath(), nil
 }
 
-func (creator *cloneCreator) cloneNoCache() (string, error) {
+func (creator *clone) cloneNoCache() (string, error) {
 	uuid, err := nextUUID()
 	if err != nil {
 		return "", err
 	}
 
-	clonePath := fmt.Sprintf("%s/%s/%s", creator.workdir, creator.g.Account, uuid)
+	clonePath := fmt.Sprintf("%s/%s/%s", creator.workdir, creator.Account, uuid)
 
 	if err = creator.cloneRepo(clonePath); err != nil {
 		return "", err
@@ -56,21 +56,21 @@ func (creator *cloneCreator) cloneNoCache() (string, error) {
 	return clonePath, nil
 }
 
-func (creator *cloneCreator) cloneRepo(dest string) error {
+func (creator *clone) cloneRepo(dest string) error {
 	repoURL := &url.URL{
 		Scheme: "https",
 		Host:   "github.com",
-		Path:   fmt.Sprintf("%s/%s", creator.g.Account, creator.g.Repo),
+		Path:   fmt.Sprintf("%s/%s", creator.Account, creator.Repo),
 	}
 
-	if creator.g.APIToken != "" {
-		repoURL.User = url.User(creator.g.APIToken)
+	if creator.APIToken != "" {
+		repoURL.User = url.User(creator.APIToken)
 	}
 
 	cloneCmd := exec.Command(
 		"git", "clone",
 		"--quiet",
-		"--depth", creator.g.Depth,
+		"--depth", creator.Depth,
 		repoURL.String(),
 		dest,
 	)
@@ -87,7 +87,7 @@ func (creator *cloneCreator) cloneRepo(dest string) error {
 	checkoutCmd := &exec.Cmd{
 		Path: git,
 		Dir:  dest,
-		Args: []string{"git", "checkout", "-qf", creator.g.Ref},
+		Args: []string{"git", "checkout", "-qf", creator.Ref},
 	}
 
 	if err := checkoutCmd.Run(); err != nil {
@@ -98,7 +98,7 @@ func (creator *cloneCreator) cloneRepo(dest string) error {
 	return nil
 }
 
-func (creator *cloneCreator) updateToRef(dest string) error {
+func (creator *clone) updateToRef(dest string) error {
 	/*
 		workflow as follows:
 			git reset --hard
@@ -147,7 +147,7 @@ func (creator *cloneCreator) updateToRef(dest string) error {
 	checkout := &exec.Cmd{
 		Path: git,
 		Dir:  dest,
-		Args: []string{"git", "checkout", "-qf", creator.g.Ref},
+		Args: []string{"git", "checkout", "-qf", creator.Ref},
 	}
 
 	return checkout.Run()

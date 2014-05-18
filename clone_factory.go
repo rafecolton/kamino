@@ -28,8 +28,8 @@ func NewCloneFactory(workdir string) (*CloneFactory, error) {
 Clone clones the repo as specified by the genome parameters.
 */
 func (factory *CloneFactory) Clone(g *genome) (path string, err error) {
-	creator := &cloneCreator{
-		g:       g,
+	creator := &clone{
+		genome:  g,
 		workdir: factory.workdir,
 	}
 
