@@ -35,7 +35,7 @@ Valid fields for opts are as follows:
 	* "depth"
 		- purpose: git clone `--depth` option
 		- required: false
-		- default: "50"
+		- default: "" (the whole repo will be cloned)
 		- validation: must be empty string or parsable as a base 10 integer
 	* "ref"
 		- purpose: the git SHA to check out in the cloned repo
@@ -53,13 +53,15 @@ func NewGenome(opts map[string]string) (*genome, error) {
 	g := &genome{}
 
 	if depth, ok := opts["depth"]; ok && depth != "" {
-		if _, err := strconv.Atoi(depth); err == nil {
-			g.Depth = depth
-		} else {
-			return nil, fmt.Errorf("%q is not a valid clone depth", depth)
+		if depth != "" {
+			if _, err := strconv.Atoi(depth); err == nil {
+				g.Depth = depth
+			} else {
+				return nil, fmt.Errorf("%q is not a valid clone depth", depth)
+			}
 		}
-	} else {
-		g.Depth = "50"
+
+		g.Depth = depth
 	}
 
 	if token, ok := opts["token"]; ok {
