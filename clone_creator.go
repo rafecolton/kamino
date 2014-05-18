@@ -67,13 +67,24 @@ func (creator *clone) cloneRepo(dest string) error {
 		repoURL.User = url.User(creator.APIToken)
 	}
 
-	cloneCmd := exec.Command(
-		"git", "clone",
-		"--quiet",
-		"--depth", creator.Depth,
-		repoURL.String(),
-		dest,
-	)
+	var cloneCmd *exec.Cmd
+
+	if creator.Depth == "" {
+		cloneCmd = exec.Command(
+			"git", "clone",
+			"--quiet",
+			repoURL.String(),
+			dest,
+		)
+	} else {
+		cloneCmd = exec.Command(
+			"git", "clone",
+			"--quiet",
+			"--depth", creator.Depth,
+			repoURL.String(),
+			dest,
+		)
+	}
 
 	if err := cloneCmd.Run(); err != nil {
 		return err

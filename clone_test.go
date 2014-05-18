@@ -42,10 +42,7 @@ var _ = Describe("no cache", func() {
 		genome, _ := NewGenome(opts)
 		cachePath = fmt.Sprintf("%s/%s", tmpdir, cacheDirSuffix)
 
-		path, err = subject.Clone(genome)
-		//if err != nil {
-		//fmt.Printf("got an error: %q\n", err)
-		//}
+		path, _ = subject.Clone(genome)
 	})
 
 	AfterEach(func() {
