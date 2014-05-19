@@ -115,8 +115,8 @@ func (creator *clone) updateToRef(dest string) error {
 			git reset --hard
 			git clean -df
 			git fetch
-			git pull --rebase || true # (in case it's a branch)
-			git checkout -qf <ref>
+			git checkout -f <ref>
+			git symbolic-ref HEAD || git pull --rebase
 	*/
 	git, err := fileutils.Which("git")
 	if err != nil {
@@ -139,6 +139,11 @@ func (creator *clone) updateToRef(dest string) error {
 			Dir:  dest,
 			Args: []string{"git", "fetch"},
 		},
+		&exec.Cmd{
+			Path: git,
+			Dir:  dest,
+			Args: []string{"git", "checkout", "-f", creator.Ref},
+		},
 	}
 
 	for _, cmd := range cmds {
@@ -147,19 +152,24 @@ func (creator *clone) updateToRef(dest string) error {
 		}
 	}
 
-	cmd := &exec.Cmd{
+	detectBranch := &exec.Cmd{
 		Path: git,
 		Dir:  dest,
-		Args: []string{"git", "pull", "--rebase"},
+		Args: []string{"git", "symbolic-ref", "HEAD"},
 	}
 
-	cmd.Run() // ignore failure, since our ref may not be a branch
+	// no error => we are on a proper branch (as opposed to a detached HEAD)
+	if err := detectBranch.Run(); err == nil {
+		pullRebase := &exec.Cmd{
+			Path: git,
+			Dir:  dest,
+			Args: []string{"git", "pull", "--rebase"},
+		}
 
-	checkout := &exec.Cmd{
-		Path: git,
-		Dir:  dest,
-		Args: []string{"git", "checkout", "-qf", creator.Ref},
+		if err = pullRebase.Run(); err != nil {
+			return err
+		}
 	}
 
-	return checkout.Run()
+	return nil
 }
