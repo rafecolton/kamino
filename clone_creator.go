@@ -116,7 +116,7 @@ func (creator *clone) updateToRef(dest string) error {
 			git clean -df
 			git fetch
 			git checkout -f <ref>
-			git symbolic-ref HEAD || git pull --rebase
+			git symbolic-ref HEAD && git pull --rebase
 	*/
 	git, err := fileutils.Which("git")
 	if err != nil {
