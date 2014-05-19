@@ -98,7 +98,7 @@ func (creator *clone) cloneRepo(dest string) error {
 	checkoutCmd := &exec.Cmd{
 		Path: git,
 		Dir:  dest,
-		Args: []string{"git", "checkout", "-qf", creator.Ref},
+		Args: []string{"git", "checkout", "--force", "--quiet", creator.Ref},
 	}
 
 	if err := checkoutCmd.Run(); err != nil {
@@ -127,22 +127,22 @@ func (creator *clone) updateToRef(dest string) error {
 		&exec.Cmd{
 			Path: git,
 			Dir:  dest,
-			Args: []string{"git", "reset", "--hard"},
+			Args: []string{"git", "reset", "--hard", "--quiet"},
 		},
 		&exec.Cmd{
 			Path: git,
 			Dir:  dest,
-			Args: []string{"git", "clean", "-df"},
+			Args: []string{"git", "clean", "-d", "--force", "--quiet"},
 		},
 		&exec.Cmd{
 			Path: git,
 			Dir:  dest,
-			Args: []string{"git", "fetch"},
+			Args: []string{"git", "fetch", "--prune", "--quiet"},
 		},
 		&exec.Cmd{
 			Path: git,
 			Dir:  dest,
-			Args: []string{"git", "checkout", "-f", creator.Ref},
+			Args: []string{"git", "checkout", "--force", "--quiet", creator.Ref},
 		},
 	}
 
@@ -155,7 +155,7 @@ func (creator *clone) updateToRef(dest string) error {
 	detectBranch := &exec.Cmd{
 		Path: git,
 		Dir:  dest,
-		Args: []string{"git", "symbolic-ref", "HEAD"},
+		Args: []string{"git", "symbolic-ref", "--quiet", "HEAD"},
 	}
 
 	// no error => we are on a proper branch (as opposed to a detached HEAD)
@@ -163,7 +163,7 @@ func (creator *clone) updateToRef(dest string) error {
 		pullRebase := &exec.Cmd{
 			Path: git,
 			Dir:  dest,
-			Args: []string{"git", "pull", "--rebase"},
+			Args: []string{"git", "pull", "--rebase", "--quiet"},
 		}
 
 		if err = pullRebase.Run(); err != nil {
