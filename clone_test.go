@@ -1,7 +1,5 @@
 package kamino_test
 
-//TODO: add test to make sure cloning by branch name also works
-
 import (
 	. "github.com/modcloth/kamino"
 	. "github.com/onsi/ginkgo"
@@ -177,8 +175,6 @@ var _ = Describe("use cache if available", func() {
 			//////////////////////////////////////////
 			subject.Clone(preCloneGenome)
 			/////////////////////////////////////////
-
-			cachePath = fmt.Sprintf("%s/%s", tmpdir, cacheDirSuffix)
 
 			path, _ := subject.Clone(cloneGenome)
 			ref, _ := GetRef(cachePath)
