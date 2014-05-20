@@ -1,3 +1,4 @@
+// Package kamino makes it super easy to clone things from GitHub.
 package kamino
 
 import (
