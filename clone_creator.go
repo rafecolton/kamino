@@ -127,11 +127,6 @@ func (creator *clone) updateToRef(dest string) error {
 		&exec.Cmd{
 			Path: git,
 			Dir:  dest,
-			Args: []string{"git", "reset", "--hard", "--quiet"},
-		},
-		&exec.Cmd{
-			Path: git,
-			Dir:  dest,
 			Args: []string{"git", "clean", "-d", "--force", "--quiet"},
 		},
 		&exec.Cmd{
