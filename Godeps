@@ -6,6 +6,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.2.0-9-g97978e5",
+			"Rev": "97978e5e5483a3f926c2bb6e19f9e2ff344e81f0"
+		},
+		{
 			"ImportPath": "github.com/modcloth/go-fileutils",
 			"Rev": "66b8be3a55b04e20fa4a26ca867fbb5612f75a73"
 		},
