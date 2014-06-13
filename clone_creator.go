@@ -1,10 +1,13 @@
 package kamino
 
 import (
+	"bytes"
 	"fmt"
 	"net/url"
 	"os/exec"
+	"strings"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/modcloth/go-fileutils"
 )
 
@@ -57,6 +60,13 @@ func (creator *clone) cloneNoCache() (string, error) {
 }
 
 func (creator *clone) cloneRepo(dest string) error {
+	git, err := fileutils.Which("git")
+	if err != nil {
+		return err
+	}
+
+	buff := &bytes.Buffer{}
+
 	repoURL := &url.URL{
 		Scheme: "https",
 		Host:   "github.com",
@@ -70,39 +80,57 @@ func (creator *clone) cloneRepo(dest string) error {
 	var cloneCmd *exec.Cmd
 
 	if creator.Depth == "" {
-		cloneCmd = exec.Command(
-			"git", "clone",
-			"--quiet",
-			repoURL.String(),
-			dest,
-		)
+		cloneCmd = &exec.Cmd{
+			Path:   git,
+			Args:   []string{"git", "clone", repoURL.String(), dest},
+			Stderr: buff,
+		}
+
 	} else {
-		cloneCmd = exec.Command(
-			"git", "clone",
-			"--quiet",
-			"--depth", creator.Depth,
-			repoURL.String(),
-			dest,
-		)
+		cloneCmd = &exec.Cmd{
+			Path: git,
+			Args: []string{
+				"git", "clone", "--depth", creator.Depth, repoURL.String(), dest,
+			},
+			Stderr: buff,
+		}
 	}
 
 	if err := cloneCmd.Run(); err != nil {
+		logger.WithFields(logrus.Fields{
+			"account":            creator.Account,
+			"cache_method":       creator.UseCache,
+			"depth":              creator.Depth,
+			"ref":                creator.Ref,
+			"repo":               creator.Repo,
+			"api_token_provided": creator.APIToken != "",
+			"go_error":           err,
+			"stdout":             buff.String(),
+		}).Error("error running clone command")
+
 		return err
 	}
 
-	git, err := fileutils.Which("git")
-	if err != nil {
-		return err
-	}
-
+	buff.Reset()
 	checkoutCmd := &exec.Cmd{
-		Path: git,
-		Dir:  dest,
-		Args: []string{"git", "checkout", "--force", "--quiet", creator.Ref},
+		Path:   git,
+		Dir:    dest,
+		Args:   []string{"git", "checkout", "--force", creator.Ref},
+		Stderr: buff,
 	}
 
 	if err := checkoutCmd.Run(); err != nil {
-		fmt.Printf("GOT HERE, err = %q, dest = %q\n", err, dest)
+		logger.WithFields(logrus.Fields{
+			"account":            creator.Account,
+			"cache_method":       creator.UseCache,
+			"depth":              creator.Depth,
+			"ref":                creator.Ref,
+			"repo":               creator.Repo,
+			"api_token_provided": creator.APIToken != "",
+			"go_error":           err,
+			"stdout":             buff.String(),
+		}).Error("error running checkout command")
+
 		return err
 	}
 
@@ -122,45 +150,70 @@ func (creator *clone) updateToRef(dest string) error {
 		return err
 	}
 
+	buff := &bytes.Buffer{}
+
 	cmds := []*exec.Cmd{
 		&exec.Cmd{
-			Path: git,
-			Dir:  dest,
-			Args: []string{"git", "clean", "-d", "--force", "--quiet"},
+			Args: []string{"git", "clean", "-d", "--force"},
 		},
 		&exec.Cmd{
-			Path: git,
-			Dir:  dest,
-			Args: []string{"git", "fetch", "--prune", "--quiet"},
+			Args: []string{"git", "fetch", "--prune"},
 		},
 		&exec.Cmd{
-			Path: git,
-			Dir:  dest,
-			Args: []string{"git", "checkout", "--force", "--quiet", creator.Ref},
+			Args: []string{"git", "checkout", "--force", creator.Ref},
 		},
 	}
 
 	for _, cmd := range cmds {
+		cmd.Path = git
+		cmd.Dir = dest
+		cmd.Stderr = buff
+
 		if err := cmd.Run(); err != nil {
+			logger.WithFields(logrus.Fields{
+				"account":            creator.Account,
+				"cache_method":       creator.UseCache,
+				"depth":              creator.Depth,
+				"ref":                creator.Ref,
+				"repo":               creator.Repo,
+				"api_token_provided": creator.APIToken != "",
+				"go_error":           err,
+				"stdout":             buff.String(),
+			}).Errorf("error running command %q", strings.Join(cmd.Args, " "))
+
 			return err
 		}
+
+		buff.Reset()
 	}
 
 	detectBranch := &exec.Cmd{
 		Path: git,
 		Dir:  dest,
-		Args: []string{"git", "symbolic-ref", "--quiet", "HEAD"},
+		Args: []string{"git", "symbolic-ref", "HEAD"},
 	}
 
 	// no error => we are on a proper branch (as opposed to a detached HEAD)
 	if err := detectBranch.Run(); err == nil {
 		pullRebase := &exec.Cmd{
-			Path: git,
-			Dir:  dest,
-			Args: []string{"git", "pull", "--rebase", "--quiet"},
+			Path:   git,
+			Dir:    dest,
+			Args:   []string{"git", "pull", "--rebase"},
+			Stderr: buff,
 		}
 
 		if err = pullRebase.Run(); err != nil {
+			logger.WithFields(logrus.Fields{
+				"account":            creator.Account,
+				"cache_method":       creator.UseCache,
+				"depth":              creator.Depth,
+				"ref":                creator.Ref,
+				"repo":               creator.Repo,
+				"api_token_provided": creator.APIToken != "",
+				"go_error":           err,
+				"stdout":             buff.String(),
+			}).Errorf("error running command %q", strings.Join(pullRebase.Args, " "))
+
 			return err
 		}
 	}

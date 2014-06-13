@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/Sirupsen/logrus"
 )
 
 /*
@@ -42,6 +44,15 @@ func (factory *CloneFactory) Clone(g *Genome) (path string, err error) {
 		Genome:  g,
 		workdir: factory.workdir,
 	}
+
+	logger.WithFields(logrus.Fields{
+		"account":            g.Account,
+		"cache_method":       g.UseCache,
+		"depth":              g.Depth,
+		"ref":                g.Ref,
+		"repo":               g.Repo,
+		"api_token_provided": g.APIToken != "",
+	}).Debug("requesting clone")
 
 	switch g.UseCache {
 	case No:

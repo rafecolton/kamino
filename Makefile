@@ -5,9 +5,9 @@ K := github.com/modcloth/kamino
 TARGETS := $(K)
 
 GINKGO_PATH ?= "."
-GOPATH := $(PWD)/Godeps/_workspace
+GOPATH := $(shell echo $${GOPATH%%:*})
 GOBIN := $(GOPATH)/bin
-PATH := $(GOPATH):$(PATH)
+PATH := $(GOBIN):$(PATH)
 
 export GINKGO_PATH
 export GOPATH
@@ -22,23 +22,13 @@ all: clean build test
 .PHONY: clean
 clean:
 	go clean -i -r $(TARGETS) || true
-	rm -rf $${GOPATH%%:*}/src/github.com/modcloth/kamino
-	rm -rf Godeps/_workspace/*
 
 .PHONY: build
-build: linkthis deps
+build: deps
 	go install $(TARGETS)
 
 .PHONY: test
 test: build fmtpolice ginkgo
-
-.PHONY: linkthis
-linkthis:
-	@echo "gvm linkthis'ing this..."
-	@if which gvm >/dev/null && \
-	  [[ ! -d $${GOPATH%%:*}/src/github.com/modcloth/kamino ]] ; then \
-	  gvm linkthis github.com/modcloth/kamino ; \
-	  fi
 
 .PHONY: godep
 godep:
@@ -92,3 +82,7 @@ ginkgo:
 	  else echo "$(GOBIN)/ginkgo -nodes=10 -noisyPendings -race --v $(GINKGO_PATH)" && \
 	  $(GOBIN)/ginkgo -nodes=10 -noisyPendings -race --v $(GINKGO_PATH) ; \
 	  fi
+
+.PHONY: save
+save:
+	godep save -copy=false ./...
