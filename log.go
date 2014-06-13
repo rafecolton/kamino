@@ -10,8 +10,8 @@ func init() {
 }
 
 /*
- SetLogLevel sets the log level (from Sirupsen/logrus) on kamino's internal
- logger
+SetLogLevel sets the log level (from Sirupsen/logrus) on kamino's internal
+logger
 */
 func SetLogLevel(level logrus.Level) {
 	logger.Level = level
