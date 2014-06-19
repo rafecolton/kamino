@@ -45,7 +45,7 @@ func (factory *CloneFactory) Clone(g *Genome) (path string, err error) {
 		workdir: factory.workdir,
 	}
 
-	logger.WithFields(logrus.Fields{
+	Logger.WithFields(logrus.Fields{
 		"account":            g.Account,
 		"cache_method":       g.UseCache,
 		"depth":              g.Depth,
