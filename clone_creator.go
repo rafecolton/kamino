@@ -97,7 +97,7 @@ func (creator *clone) cloneRepo(dest string) error {
 	}
 
 	if err := cloneCmd.Run(); err != nil {
-		logger.WithFields(logrus.Fields{
+		Logger.WithFields(logrus.Fields{
 			"account":            creator.Account,
 			"cache_method":       creator.UseCache,
 			"depth":              creator.Depth,
@@ -120,7 +120,7 @@ func (creator *clone) cloneRepo(dest string) error {
 	}
 
 	if err := checkoutCmd.Run(); err != nil {
-		logger.WithFields(logrus.Fields{
+		Logger.WithFields(logrus.Fields{
 			"account":            creator.Account,
 			"cache_method":       creator.UseCache,
 			"depth":              creator.Depth,
@@ -170,7 +170,7 @@ func (creator *clone) updateToRef(dest string) error {
 		cmd.Stderr = buff
 
 		if err := cmd.Run(); err != nil {
-			logger.WithFields(logrus.Fields{
+			Logger.WithFields(logrus.Fields{
 				"account":            creator.Account,
 				"cache_method":       creator.UseCache,
 				"depth":              creator.Depth,
@@ -203,7 +203,7 @@ func (creator *clone) updateToRef(dest string) error {
 		}
 
 		if err = pullRebase.Run(); err != nil {
-			logger.WithFields(logrus.Fields{
+			Logger.WithFields(logrus.Fields{
 				"account":            creator.Account,
 				"cache_method":       creator.UseCache,
 				"depth":              creator.Depth,

@@ -2,17 +2,12 @@ package kamino
 
 import "github.com/Sirupsen/logrus"
 
-var logger = logrus.New()
+// Logger is the logger used by the runner package.  It is initialized in the
+// init() function so it may be overwritten any time after that.
+var Logger *logrus.Logger
 
 func init() {
-	logger.Formatter = &logrus.JSONFormatter{}
-	logger.Level = logrus.Info // default to Info
-}
-
-/*
-SetLogLevel sets the log level (from Sirupsen/logrus) on kamino's internal
-logger
-*/
-func SetLogLevel(level logrus.Level) {
-	logger.Level = level
+	Logger = logrus.New()
+	Logger.Formatter = &logrus.TextFormatter{}
+	Logger.Level = logrus.Info // default to Info
 }
