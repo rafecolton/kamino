@@ -141,10 +141,10 @@ func (creator *clone) cloneRepo(dest string) error {
 func (creator *clone) updateToRef(dest string) error {
 	/*
 		workflow as follows:
-			git clean -d --force --quiet
-			git fetch --prune --quiet
-			git checkout --force --quiet <ref>
-			git symbolic-ref --quiet HEAD && git pull --rebase --quiet
+			git clean -d --force
+			git fetch --prune
+			git checkout --force <ref>
+			git symbolic-ref HEAD && git pull --rebase
 	*/
 	git, err := fileutils.Which("git")
 	if err != nil {
