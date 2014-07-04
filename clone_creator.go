@@ -106,7 +106,7 @@ func (creator *clone) cloneRepo(dest string) error {
 			"repo":               creator.Repo,
 			"api_token_provided": creator.APIToken != "",
 			"go_error":           err,
-			"stdout":             buff.String(),
+			"stderr":             buff.String(),
 		}).Error("error running clone command")
 
 		return err
@@ -129,7 +129,7 @@ func (creator *clone) cloneRepo(dest string) error {
 			"repo":               creator.Repo,
 			"api_token_provided": creator.APIToken != "",
 			"go_error":           err,
-			"stdout":             buff.String(),
+			"stderr":             buff.String(),
 		}).Error("error running checkout command")
 
 		return err
@@ -179,7 +179,7 @@ func (creator *clone) updateToRef(dest string) error {
 				"repo":               creator.Repo,
 				"api_token_provided": creator.APIToken != "",
 				"go_error":           err,
-				"stdout":             buff.String(),
+				"stderr":             buff.String(),
 			}).Errorf("error running command %q", strings.Join(cmd.Args, " "))
 
 			return err
@@ -212,7 +212,7 @@ func (creator *clone) updateToRef(dest string) error {
 				"repo":               creator.Repo,
 				"api_token_provided": creator.APIToken != "",
 				"go_error":           err,
-				"stdout":             buff.String(),
+				"stderr":             buff.String(),
 			}).Errorf("error running command %q", strings.Join(pullRebase.Args, " "))
 
 			return err
