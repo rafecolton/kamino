@@ -79,21 +79,22 @@ func (creator *clone) cloneRepo(dest string) error {
 
 	var cloneCmd *exec.Cmd
 
-	if creator.Depth == "" {
-		cloneCmd = &exec.Cmd{
-			Path:   git,
-			Args:   []string{"git", "clone", repoURL.String(), dest},
-			Stderr: buff,
-		}
+	cloneArgs := []string{"git", "clone"}
 
-	} else {
-		cloneCmd = &exec.Cmd{
-			Path: git,
-			Args: []string{
-				"git", "clone", "--depth", creator.Depth, repoURL.String(), dest,
-			},
-			Stderr: buff,
-		}
+	if creator.Recursive {
+		cloneArgs = append(cloneArgs, "--recursive")
+	}
+
+	if creator.Depth != "" {
+		cloneArgs = append(cloneArgs, "--depth", creator.Depth)
+	}
+
+	cloneArgs = append(cloneArgs, repoURL.String(), dest)
+
+	cloneCmd = &exec.Cmd{
+		Path:   git,
+		Args:   cloneArgs,
+		Stderr: buff,
 	}
 
 	if err := cloneCmd.Run(); err != nil {

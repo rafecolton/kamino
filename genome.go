@@ -47,12 +47,13 @@ A Genome is the genetic options for a clone.  Here are the requirements for a va
 
 */
 type Genome struct {
-	APIToken string
-	Account  string
-	Depth    string
-	Ref      string
-	Repo     string
-	UseCache CacheOption
+	APIToken  string
+	Account   string
+	Depth     string
+	Recursive bool
+	Ref       string
+	Repo      string
+	UseCache  CacheOption
 }
 
 /*
