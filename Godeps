@@ -1,14 +1,14 @@
 {
 	"ImportPath": "github.com/modcloth/kamino",
-	"GoVersion": "go1.2.2",
+	"GoVersion": "go1.3",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.2.0-9-g97978e5",
-			"Rev": "97978e5e5483a3f926c2bb6e19f9e2ff344e81f0"
+			"Comment": "v0.5.0",
+			"Rev": "d1c2d610bd8d921fcffc4791c204eafa634e2956"
 		},
 		{
 			"ImportPath": "github.com/modcloth/go-fileutils",
@@ -20,12 +20,12 @@
 		},
 		{
 			"ImportPath": "github.com/onsi/ginkgo",
-			"Comment": "v1.0.0-2-g4cf6831",
-			"Rev": "4cf683101c36426dc975f4db4d7f01d9c071f31a"
+			"Comment": "v1.0.0-28-g6481765",
+			"Rev": "6481765dda39cbaae281109e6945449642329197"
 		},
 		{
 			"ImportPath": "github.com/onsi/gomega",
-			"Rev": "50bea9a608004800126b3fddab0c3608d87c0ca9"
+			"Rev": "4699d5a664396173c7d9fcef9e88be297c7bae13"
 		}
 	]
 }
