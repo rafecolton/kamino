@@ -94,6 +94,7 @@ func (creator *clone) cloneRepo(dest string) error {
 	cloneCmd = &exec.Cmd{
 		Path:   git,
 		Args:   cloneArgs,
+		Stdout: buff,
 		Stderr: buff,
 	}
 
