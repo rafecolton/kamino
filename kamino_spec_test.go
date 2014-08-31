@@ -11,6 +11,6 @@ import (
 func TestBuilder(t *testing.T) {
 	RegisterFailHandler(Fail)
 	kamino.Logger = logrus.New()
-	kamino.Logger.Level = logrus.Panic
+	kamino.Logger.Level = logrus.PanicLevel
 	RunSpecs(t, "Kamino Spec")
 }
