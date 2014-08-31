@@ -9,5 +9,5 @@ var Logger *logrus.Logger
 func init() {
 	Logger = logrus.New()
 	Logger.Formatter = &logrus.TextFormatter{}
-	Logger.Level = logrus.Info // default to Info
+	Logger.Level = logrus.InfoLevel // default to Info
 }
