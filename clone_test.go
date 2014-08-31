@@ -83,15 +83,9 @@ var _ = Describe("cloning recursively", func() {
 	Context("recursive: true", func() {
 		It("clones recursively", func() {
 			genome.Recursive = true
-			path, err = subject.Clone(genome)
-			if err != nil {
-				fmt.Printf("err: %q\n", err)
-			}
+			path, _ = subject.Clone(genome)
 			requestedPath := path + "/kamino-test/README.md"
-			exists, err := Exists(requestedPath)
-			if err != nil {
-				fmt.Printf("err: %q\n", err)
-			}
+			exists, _ := Exists(requestedPath)
 
 			Expect(exists).To(BeTrue())
 		})

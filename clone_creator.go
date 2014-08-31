@@ -98,9 +98,6 @@ func (creator *clone) cloneRepo(dest string) error {
 		Stderr: buff,
 	}
 
-	fmt.Printf("path to git: %q\n", git)
-	fmt.Printf("cloneArgs: %q\n", strings.Join(cloneArgs, " "))
-
 	if err := cloneCmd.Run(); err != nil {
 		Logger.WithFields(logrus.Fields{
 			"account":            creator.Account,
