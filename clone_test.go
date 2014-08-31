@@ -38,7 +38,7 @@ var _ = Describe("no cache", func() {
 
 		tmpdir, _ = ioutil.TempDir("", "kamino-test")
 		subject, _ = NewCloneFactory(tmpdir)
-		cachePath = fmt.Sprintf("%s/%s", tmpdir, cacheDirSuffix)
+		cachePath = tmpdir + "/" + cacheDirSuffix
 
 		path, _ = subject.Clone(genome)
 	})
