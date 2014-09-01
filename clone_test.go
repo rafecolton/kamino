@@ -7,6 +7,7 @@ import (
 
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
 
 	"github.com/modcloth/go-fileutils"
@@ -37,7 +38,7 @@ var _ = Describe("no cache", func() {
 
 		tmpdir, _ = ioutil.TempDir("", "kamino-test")
 		subject, _ = NewCloneFactory(tmpdir)
-		cachePath = fmt.Sprintf("%s/%s", tmpdir, cacheDirSuffix)
+		cachePath = tmpdir + "/" + cacheDirSuffix
 
 		path, _ = subject.Clone(genome)
 	})
@@ -54,6 +55,50 @@ var _ = Describe("no cache", func() {
 		ref, _ := GetRef(path)
 
 		Expect(ref).To(Equal(requestedSHA))
+	})
+})
+
+var _ = Describe("cloning recursively", func() {
+	var (
+		genome *Genome
+	)
+
+	BeforeEach(func() {
+		genome = &Genome{
+			Depth:     "50",
+			Account:   "modcloth-labs",
+			Repo:      "kamino-test",
+			UseCache:  "no",
+			Ref:       requestedSHA,
+			Recursive: false,
+		}
+		tmpdir, _ = ioutil.TempDir("", "kamino-test")
+		subject, _ = NewCloneFactory(tmpdir)
+	})
+
+	AfterEach(func() {
+		fileutils.RmRF(tmpdir)
+	})
+
+	Context("recursive: true", func() {
+		It("clones recursively", func() {
+			genome.Recursive = true
+			path, _ = subject.Clone(genome)
+			requestedPath := path + "/kamino-test/README.md"
+			exists, _ := Exists(requestedPath)
+
+			Expect(exists).To(BeTrue())
+		})
+	})
+
+	Context("recursive: false", func() {
+		It("clones but not recursively", func() {
+			path, _ = subject.Clone(genome)
+			requestedPath := path + "/kamino-test/README.md"
+			exists, _ := Exists(requestedPath)
+
+			Expect(exists).ToNot(BeTrue())
+		})
 	})
 })
 
@@ -208,4 +253,13 @@ func GetRef(path string) (string, error) {
 	}
 
 	return string(refBytes)[:len(refBytes)-1], nil
+}
+
+func Exists(name string) (bool, error) {
+	_, err := os.Stat(name)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+
+	return err == nil, err
 }

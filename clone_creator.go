@@ -79,21 +79,23 @@ func (creator *clone) cloneRepo(dest string) error {
 
 	var cloneCmd *exec.Cmd
 
-	if creator.Depth == "" {
-		cloneCmd = &exec.Cmd{
-			Path:   git,
-			Args:   []string{"git", "clone", repoURL.String(), dest},
-			Stderr: buff,
-		}
+	cloneArgs := []string{"git", "clone"}
 
-	} else {
-		cloneCmd = &exec.Cmd{
-			Path: git,
-			Args: []string{
-				"git", "clone", "--depth", creator.Depth, repoURL.String(), dest,
-			},
-			Stderr: buff,
-		}
+	if creator.Recursive {
+		cloneArgs = append(cloneArgs, "--recursive")
+	}
+
+	if creator.Depth != "" {
+		cloneArgs = append(cloneArgs, "--depth", creator.Depth)
+	}
+
+	cloneArgs = append(cloneArgs, repoURL.String(), dest)
+
+	cloneCmd = &exec.Cmd{
+		Path:   git,
+		Args:   cloneArgs,
+		Stdout: buff,
+		Stderr: buff,
 	}
 
 	if err := cloneCmd.Run(); err != nil {
@@ -105,7 +107,7 @@ func (creator *clone) cloneRepo(dest string) error {
 			"repo":               creator.Repo,
 			"api_token_provided": creator.APIToken != "",
 			"go_error":           err,
-			"stdout":             buff.String(),
+			"stderr":             buff.String(),
 		}).Error("error running clone command")
 
 		return err
@@ -128,7 +130,7 @@ func (creator *clone) cloneRepo(dest string) error {
 			"repo":               creator.Repo,
 			"api_token_provided": creator.APIToken != "",
 			"go_error":           err,
-			"stdout":             buff.String(),
+			"stderr":             buff.String(),
 		}).Error("error running checkout command")
 
 		return err
@@ -140,17 +142,18 @@ func (creator *clone) cloneRepo(dest string) error {
 func (creator *clone) updateToRef(dest string) error {
 	/*
 		workflow as follows:
-			git clean -d --force --quiet
-			git fetch --prune --quiet
-			git checkout --force --quiet <ref>
-			git symbolic-ref --quiet HEAD && git pull --rebase --quiet
+			git clean -d --force
+			git fetch --prune
+			git checkout --force <ref>
+			git symbolic-ref HEAD && git pull --rebase
 	*/
 	git, err := fileutils.Which("git")
 	if err != nil {
 		return err
 	}
 
-	buff := &bytes.Buffer{}
+	buffOut := &bytes.Buffer{}
+	buffErr := &bytes.Buffer{}
 
 	cmds := []*exec.Cmd{
 		&exec.Cmd{
@@ -167,7 +170,8 @@ func (creator *clone) updateToRef(dest string) error {
 	for _, cmd := range cmds {
 		cmd.Path = git
 		cmd.Dir = dest
-		cmd.Stderr = buff
+		cmd.Stderr = buffErr
+		cmd.Stdout = buffOut
 
 		if err := cmd.Run(); err != nil {
 			Logger.WithFields(logrus.Fields{
@@ -178,13 +182,15 @@ func (creator *clone) updateToRef(dest string) error {
 				"repo":               creator.Repo,
 				"api_token_provided": creator.APIToken != "",
 				"go_error":           err,
-				"stdout":             buff.String(),
+				"stdout":             buffOut.String(),
+				"stderr":             buffErr.String(),
 			}).Errorf("error running command %q", strings.Join(cmd.Args, " "))
 
 			return err
 		}
 
-		buff.Reset()
+		buffErr.Reset()
+		buffOut.Reset()
 	}
 
 	detectBranch := &exec.Cmd{
@@ -199,7 +205,8 @@ func (creator *clone) updateToRef(dest string) error {
 			Path:   git,
 			Dir:    dest,
 			Args:   []string{"git", "pull", "--rebase"},
-			Stderr: buff,
+			Stderr: buffErr,
+			Stdout: buffOut,
 		}
 
 		if err = pullRebase.Run(); err != nil {
@@ -211,7 +218,8 @@ func (creator *clone) updateToRef(dest string) error {
 				"repo":               creator.Repo,
 				"api_token_provided": creator.APIToken != "",
 				"go_error":           err,
-				"stdout":             buff.String(),
+				"stdout":             buffOut.String(),
+				"stderr":             buffErr.String(),
 			}).Errorf("error running command %q", strings.Join(pullRebase.Args, " "))
 
 			return err
