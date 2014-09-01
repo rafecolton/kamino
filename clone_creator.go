@@ -152,7 +152,8 @@ func (creator *clone) updateToRef(dest string) error {
 		return err
 	}
 
-	buff := &bytes.Buffer{}
+	buffOut := &bytes.Buffer{}
+	buffErr := &bytes.Buffer{}
 
 	cmds := []*exec.Cmd{
 		&exec.Cmd{
@@ -169,7 +170,8 @@ func (creator *clone) updateToRef(dest string) error {
 	for _, cmd := range cmds {
 		cmd.Path = git
 		cmd.Dir = dest
-		cmd.Stderr = buff
+		cmd.Stderr = buffErr
+		cmd.Stdout = buffOut
 
 		if err := cmd.Run(); err != nil {
 			Logger.WithFields(logrus.Fields{
@@ -180,13 +182,15 @@ func (creator *clone) updateToRef(dest string) error {
 				"repo":               creator.Repo,
 				"api_token_provided": creator.APIToken != "",
 				"go_error":           err,
-				"stderr":             buff.String(),
+				"stdout":             buffOut.String(),
+				"stderr":             buffErr.String(),
 			}).Errorf("error running command %q", strings.Join(cmd.Args, " "))
 
 			return err
 		}
 
-		buff.Reset()
+		buffErr.Reset()
+		buffOut.Reset()
 	}
 
 	detectBranch := &exec.Cmd{
@@ -201,7 +205,8 @@ func (creator *clone) updateToRef(dest string) error {
 			Path:   git,
 			Dir:    dest,
 			Args:   []string{"git", "pull", "--rebase"},
-			Stderr: buff,
+			Stderr: buffErr,
+			Stdout: buffOut,
 		}
 
 		if err = pullRebase.Run(); err != nil {
@@ -213,7 +218,8 @@ func (creator *clone) updateToRef(dest string) error {
 				"repo":               creator.Repo,
 				"api_token_provided": creator.APIToken != "",
 				"go_error":           err,
-				"stderr":             buff.String(),
+				"stdout":             buffOut.String(),
+				"stderr":             buffErr.String(),
 			}).Errorf("error running command %q", strings.Join(pullRebase.Args, " "))
 
 			return err
